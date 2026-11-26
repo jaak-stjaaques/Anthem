@@ -36,6 +36,7 @@ wrote). **OCT+** and they go forward again.
   an ORBIT over it (CIRCLE, EIGHT, ROSE, DIAMOND, LINE on ALGORITHM) at the note's frequency, and the heights it
   passes are the wave. DRIFT centres the orbit where the ant stands: **every ant sounds like the ground under its
   feet**, and as they paint, the timbre changes with the music. SIZE, GROUND (how high the paint stands), SMOOTH.
+  **Hold EDIT on the EDIT page: a random sound** (the orbit, EDIT, ENV and LFO).
 - **ENV is every footstep**: ATTACK, DECAY, ACCENT (the later colours louder), BLOOM (the orbit opens at each step).
 - **LFO, the wind**: SIZE, SHIFT (the orbits slide over the ground), PITCH or LEVEL.
 - **The ARP is a chord the ants sing**: hold keys and every cell's note goes to the nearest note of your chord (or
@@ -49,7 +50,7 @@ wrote). **OCT+** and they go forward again.
 
 [Read the operator manual](docs/OPERATOR-MANUAL.md) · [Credits and licenses](LICENSING.md) · [Changelog](CHANGELOG.md)
 
-**Version 0.1.3** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.3.fwsc`). The host tests pass. It has **not yet
+**Version 0.1.4** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.4.fwsc`). The host tests pass. It has **not yet
 been installed on a physical FM‑1**.
 
 ## Build

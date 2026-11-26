@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4 – 2026-11-25
+
+- **A random sound: hold EDIT for 300 ms on the EDIT page.** The orbit, SIZE, GROUND, SMOOTH, DRIFT, the ENV and the LFO
+  get new values, within musical ranges (mostly short attacks, decays of 0.2 to 10 s, a gentle LFO). The colony, the
+  map, the scale and FX stay. Once a hold; only from the EDIT page itself. The EDIT page's hint says so.
+
 ## 0.1.3 – 2026-11-25
 
 - **The seed sings an octave up.** On the cells of the SEED's pattern (ONE DOT, DASHES, CROSS, RING, DUST, MOSS,

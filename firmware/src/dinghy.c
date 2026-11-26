@@ -105,6 +105,7 @@ static void app_audio(int32_t *out, uint32_t frames)
 
 /* ---------------------------------------------------------------------------------------------- settings */
 #define DECAY_MAX 30u                           /* env_ms[30] = 10 s: the longest DECAY */
+#define RANDOM_MS 300u                          /* EDIT held this long on EDIT: a random sound */
 #define KEY0 53u                                /* key 0 = F3 */
 #define SET_VER 1u
 static struct { uint8_t ver, oct, ch, sync_int, tempo, pad[3]; } set = {SET_VER, 0, 0, 0, 96, {0}};
@@ -951,6 +952,29 @@ static void update_fx(void)
     hall_configure(pat.reverb != 0, 84, 40, pat.reverb);
 }
 
+/* Hold EDIT on the EDIT page: a random sound. The orbit, EDIT, ENV and LFO, each within a range that still sounds
+ * like an instrument (mostly short attacks, decays that ring, a gentle LFO); the colony, the map and FX stay. */
+static uint32_t dice = 0x6D2B79F5u;
+static uint32_t roll(uint32_t lo, uint32_t hi) { return lo + rnd_next(&dice) % (hi - lo + 1u); }
+
+static void sound_random(void)
+{
+    dice ^= fm1_ms * 2654435761u ^ (uint32_t)world_t;
+    pat.orbit = (uint8_t)roll(0, ORBITS - 1u);
+    pat.size = (uint8_t)roll(5, 35) * 2u;       /* 10 .. 70 % */
+    pat.ground = (uint8_t)roll(10, 50) * 2u;    /* 20 .. 100 % */
+    pat.smooth = (uint8_t)roll(0, 4);
+    pat.drift = (uint8_t)roll(0, 50) * 2u;
+    pat.attack = (uint8_t)(roll(0, 3) ? roll(0, 8) : roll(9, 18));   /* mostly 0 .. 100 ms, now and then up to 1 s */
+    pat.decay = (uint8_t)roll(10, DECAY_MAX);   /* 200 ms .. 10 s */
+    pat.accent = (uint8_t)roll(0, 40) * 2u;
+    pat.bloom = (uint8_t)roll(0, 40) * 2u;
+    pat.lfo_target = (uint8_t)roll(0, LFO_TARGETS - 1u);
+    pat.lfo_wave = (uint8_t)roll(0, LFO_WAVES - 1u);
+    pat.lfo_rate = (uint8_t)roll(0, 44);        /* 0.01 .. ~2 Hz */
+    pat.lfo_depth = (uint8_t)(pat.lfo_target == LFO_PITCH ? roll(0, 10) : roll(0, 30)) * 2u;
+}
+
 static uint8_t button_page(uint32_t button)
 {
     switch (button) {
@@ -1002,7 +1026,7 @@ static void draw_footer(uint8_t page)
         break;
     case P_SEQ: ui_footer("A CELL'S NOTE: ACROSS + UP", C_OFF); break;
     case P_ARP: ui_footer(arp.on ? "THE ANTS SING YOUR CHORD" : "ARP: PRESS AGAIN TO TURN ON", C_OFF); break;
-    case P_EDIT: ui_footer("ALGORITHM: THE ORBIT'S SHAPE", C_OFF); break;
+    case P_EDIT: ui_footer("ALGO: ORBIT  HOLD EDIT: RANDOM", C_OFF); break;
     case P_ENV: ui_footer("EVERY FOOTSTEP", C_OFF); break;
     case P_LFO: {
         static const char *const what[LFO_TARGETS] = {"THE ORBITS GROW AND SHRINK", "THE ORBITS SLIDE SIDEWAYS",
@@ -1083,7 +1107,8 @@ static void app_main(void)
     uint8_t page = P_HOME, drawn_page = 0xFF, key_on[27] = {0};
     uint32_t prev_keys = 0, drawn_state = 0, drawn_rows = 0, drawn_footer = ~0u, title_state = ~0u, drawn_line = ~0u;
     uint32_t flash_until[27] = {0}, off_at[16] = {0}, hatched_at = 0;
-    uint8_t off_note[16] = {0}, arp_was_page = 0;
+    uint8_t off_note[16] = {0}, arp_was_page = 0, edit_held = 0;
+    uint32_t edit_down = 0;
     static char msg[40];
 #if !BOARD_SMK37
     uint8_t battery_drawn = UINT8_MAX;
@@ -1123,6 +1148,7 @@ static void app_main(void)
                 uint8_t to = button_page(i);
                 if (to != 0xFF) {
                     if (i == BTN_ARP) arp_was_page = page == P_ARP;
+                    if (i == BTN_EDIT) { edit_held = page == P_EDIT; edit_down = now; }   /* (only from EDIT itself) */
                     page = to;
                 }
                 if (i == BTN_OCT_DOWN || i == BTN_OCT_UP) {
@@ -1153,6 +1179,13 @@ static void app_main(void)
                 live_panic();
                 say(arp.on ? "THE ANTS SING YOUR CHORD" : "THE ANTS SING THE MAP");
             }
+        }
+        /* EDIT held 300 ms on the EDIT page: a random sound (once a hold) */
+        if (edit_held && !(held_b >> BTN_EDIT & 1u)) edit_held = 0;
+        if (edit_held == 1u && page == P_EDIT && now - edit_down >= RANDOM_MS) {
+            edit_held = 2;
+            sound_random();
+            say("A RANDOM SOUND");
         }
         /* OCT- and OCT+ held together: time runs twice as fast, the way the first one pressed set */
         time_fast = page != P_GLO && (held_b >> BTN_OCT_DOWN & 1u) && (held_b >> BTN_OCT_UP & 1u);

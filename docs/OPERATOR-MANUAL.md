@@ -1,6 +1,6 @@
 # ANTHEM operator manual
 
-ANTHEM 0.1.3 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
+ANTHEM 0.1.4 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
 
 ## The idea in one minute
 
@@ -53,7 +53,7 @@ ANTHEM is silent at power-on: the ants wait until you press **PLAY**.
 | **OCT+** | **Time runs forwards.** Holding OCT−, press OCT+: **backwards, twice as fast**, as long as you hold both. (On the GLO page: the root an octave up) |
 | **REC** | **Hatch**: a new colony on the SEED, the ants back in their places, time back to 0 |
 | **SEL** | **Freeze**: the ants walk on but no longer paint. On a ground that does not change, their walk soon closes into a loop and the music repeats. SEL again: they paint again, and the music moves on |
-| **HOME, SEQ, ARP, EDIT, ENV, LFO, FX, GLO** | Their page. **ARP** pressed on the ARP page turns the chord on or off |
+| **HOME, SEQ, ARP, EDIT, ENV, LFO, FX, GLO** | Their page. **ARP** pressed on the ARP page turns the chord on or off. **EDIT held 300 ms on the EDIT page**: a random sound |
 | **SAVE** | Saves everything (the sound, the map, the scale **and the colony as it stands**) into the USER preset you are on, or the last one you used |
 | **SELECT** (encoder) | **Walks time by hand**: a step forward or back for each detent, playing or stopped. On the GLO page: the scale |
 | **ALGORITHM** (encoder) | The orbit's shape: CIRCLE, EIGHT, ROSE, DIAMOND, LINE |
@@ -113,6 +113,12 @@ landscape and, in white, the orbit of the first ant's next note.
 | 4 | **DRIFT** | 0 %: every orbit in the middle of the landscape. 100 %: centred where the ant stands, so each ant sounds like the ground under it |
 
 As the ants paint, the landscape changes, and so does the sound: slowly, never with a click.
+
+**A random sound: on the EDIT page, hold EDIT for 300 ms.** The orbit, the four EDIT knobs, ENV (ATTACK, DECAY,
+ACCENT, BLOOM) and the LFO (TARGET, WAVE, RATE, DEPTH) get new values, within ranges that still sound like an
+instrument: mostly short attacks, decays from 0.2 to 10 s, a gentle LFO. The colony, the map, the scale and FX stay as
+they are. Hold again for another; SAVE keeps one you like. (Only from the EDIT page itself: pressing EDIT elsewhere
+just opens it.)
 
 ## ENV: every footstep
 
