@@ -51,7 +51,7 @@ wrote). **OCT+** and they go forward again.
 
 [Read the operator manual](docs/OPERATOR-MANUAL.md) · [Credits and licenses](LICENSING.md) · [Changelog](CHANGELOG.md)
 
-**Version 0.1.5** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.5.fwsc`). The host tests pass. It has **not yet
+**Version 0.1.6** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.6.fwsc`). The host tests pass. It has **not yet
 been installed on a physical FM‑1**.
 
 ## Build

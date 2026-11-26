@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.6 – 2026-11-25
+
+- **LATCH keeps the whole chord.** Letting go of the keys one after the other dropped each note let go while others
+  were still held, so only the last one stayed latched. Now the chord is every note pressed since the keys (and MIDI)
+  were last all up; the next key starts a new chord. Turning LATCH off leaves the keys held now as the chord.
+
 ## 0.1.5 – 2026-11-25
 
 - **Only the ants sing.** The keys no longer play the engine. On every page they set the root (C4 = C, "ROOT D" on

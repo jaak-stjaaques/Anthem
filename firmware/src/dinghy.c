@@ -259,16 +259,22 @@ static void root_from(uint32_t note)
     say(b);
 }
 
+/* LATCH: the chord is every note pressed since the keys (and MIDI) were last all up; letting go, one finger after the
+ * other, keeps it all. The next note pressed after that starts a new chord. */
+static uint8_t notes_down;                      /* panel keys and MIDI notes held now */
+
 static void chord_key(uint32_t on, uint32_t note)
 {
     if (on) {
+        if (notes_down < 255u) notes_down++;
         if (arp.latch && latched) { held_n = 0; latched = 0; }   /* a new chord after a latched one */
+        for (uint32_t i = 0; i < held_n; i++) if (held[i] == note) return;
         if (held_n < 16u) held[held_n++] = (uint8_t)note;
     } else {
-        if (arp.latch) {                        /* LATCH: the chord stays once every key is up */
-            uint32_t down = 0;
-            for (uint32_t k = 0; k < 27u; k++) down += fm1_in.notes >> k & 1u;
-            if (!down) { latched = 1; return; }
+        if (notes_down) notes_down--;
+        if (arp.latch) {                        /* LATCH: nothing goes; once every note is up, the chord is kept */
+            if (!notes_down) latched = 1;
+            return;
         }
         uint32_t j = 0;
         for (uint32_t i = 0; i < held_n; i++) if (held[i] != note) held[j++] = held[i];
@@ -285,6 +291,7 @@ static void live_note(uint32_t on, uint32_t note, uint32_t vel)
 
 static void live_panic(void)
 {
+    notes_down = 0;
     for (uint32_t n = 0; n < 128u; n++) cmd_put(0, (uint8_t)(n + 1u), 0, 0);
     held_n = 0;
     latched = 0;
@@ -916,7 +923,13 @@ static void edit_page(uint8_t page, const int32_t s[4])
         pat.sing = (uint8_t)step_clamp(pat.sing, s[3], 0, SINGS - 1);
         break;
     case P_ARP:
-        if (s[0]) { arp.latch = s[0] > 0; if (!arp.latch && latched) { held_n = 0; latched = 0; } }
+        if (s[0] && arp.latch != (s[0] > 0)) {
+            arp.latch = s[0] > 0;
+            if (!arp.latch) {                   /* LATCH off: the chord is the keys held now */
+                held_n = 0; latched = 0;
+                for (uint32_t k = 0; k < 27u && held_n < 16u; k++) if (fm1_in.notes >> k & 1u) held[held_n++] = (uint8_t)(KEY0 + k);
+            }
+        }
         arp.spread = (uint8_t)step_clamp(arp.spread, s[1], 1, 4);
         arp.pick = (uint8_t)step_clamp(arp.pick, s[2], 0, PICKS - 1);
         arp.chance = (uint8_t)step_clamp(arp.chance, s[3] * 5, 0, 100);

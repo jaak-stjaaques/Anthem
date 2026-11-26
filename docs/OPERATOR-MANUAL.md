@@ -1,6 +1,6 @@
 # ANTHEM operator manual
 
-ANTHEM 0.1.5 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
+ANTHEM 0.1.6 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
 
 ## The idea in one minute
 
@@ -146,7 +146,7 @@ Press ARP on the ARP page to turn it on. Then **hold a chord**: the ants sing on
 
 | Knob | | |
 | --- | --- | --- |
-| 1 | **LATCH** | ON: the chord stays when you let go (a new chord replaces it) |
+| 1 | **LATCH** | ON: the chord stays when you let go, every note of it, however your fingers leave the keys. The next key you press starts a new chord. OFF: the chord is the keys you hold |
 | 2 | **SPREAD** | The chord over 1 to 4 octaves |
 | 3 | **PICK** | NEAREST: each cell's note goes to the nearest note of the chord (the map still shapes the melody). IN TURN: the cells take the chord's notes in turn |
 | 4 | **CHANCE** | How often an ant sings. The chance of each step is fixed: backwards, the same notes are left out |
