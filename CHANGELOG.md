@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.7 – 2026-11-26
+
+A safety pass before the first install on an FM-1.
+
+- **More room in the audio interrupt.** The orbit's shape is now a table (built once when ALGORITHM changes it,
+  within 5/32767 of the exact shape): a sample no longer calls a function that computed up to three sines. The
+  landscape glides only for 0.14 s after the ants change it, not on every block. The per-sample loop is now ~110
+  instructions a voice (the chip's own code), ~900 with all eight voices: inside the 1000-1500 that Dinghy's sloopDX
+  engines take and fit.
+- **Two edge cases the host's sanitizers found**, harmless on the chip but fixed: a shift of a negative number, and the
+  DIAMOND orbit reaching -32769 (its product could overflow and shift the orbit for a sample).
+- Checked: the update path (loader, updater, USB, rescue, flash driver, package tool) is byte for byte PLUMB's; the
+  presets need 2084 of the 4084 bytes of their sector; ten minutes of random buttons, knobs, keys, MIDI and presets on
+  the host with AddressSanitizer and UndefinedBehaviorSanitizer: no error.
+
 ## 0.1.6 – 2026-11-25
 
 - **LATCH keeps the whole chord.** Letting go of the keys one after the other dropped each note let go while others

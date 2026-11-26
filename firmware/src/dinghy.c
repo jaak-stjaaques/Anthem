@@ -241,6 +241,7 @@ static void terrain_build(uint32_t now)
             int32_t hill = mul15(sinq(tx * (0xFFFFFFFFu / TW)), sinq(ty * (0xFFFFFFFFu / TH) + 0x40000000u)) * 12000 / 32767;
             terr_to[ty][tx] = (int16_t)clampi(hill + tbuf[ty][tx] * g / 100, -16000, 16000);
         }
+    terr_ver++;
 }
 
 /* ---------------------------------------------------------------------------------- the keys and MIDI in */

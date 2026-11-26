@@ -416,12 +416,18 @@ static void colony_block(void)
 /* ------------------------------------------------------------------------------------------- the terrain */
 static int16_t terr[TH][TW];                    /* what the orbits read (the ISR glides it to terr_to) */
 static volatile int16_t terr_to[TH][TW];        /* the landscape from the ground, built by the main loop */
+static volatile uint32_t terr_ver;              /* +1 each time the main loop builds terr_to */
 
-static void terrain_glide(void)                 /* once a block: no step in the landscape is ever heard as a click */
+static void terrain_glide(void)                 /* no step in the landscape is ever heard as a click: a quarter of the
+                                                 * way a block, and only for the 24 blocks (0.14 s) after a change */
 {
+    static uint32_t seen, left;
+    if (terr_ver != seen) { seen = terr_ver; left = 24u; }
+    if (!left) return;
+    left--;
     int16_t *a = &terr[0][0];
     volatile int16_t *b = &terr_to[0][0];
-    for (uint32_t i = 0; i < TH * TW; i++) a[i] = (int16_t)(a[i] + ((b[i] - a[i]) >> 2));
+    for (uint32_t i = 0; i < TH * TW; i++) { int32_t d = b[i] - a[i]; a[i] = (int16_t)(a[i] + (left ? d >> 2 : d)); }
 }
 
 static inline int32_t terrain_at(uint32_t X, uint32_t Y)   /* the height under a point, bilinear, Q14 */
@@ -445,12 +451,29 @@ static inline void orbit_at(uint8_t orbit, uint32_t ph, int32_t *ox, int32_t *oy
     }
     case ORB_DIAMOND: {                         /* two triangles a quarter apart */
         int32_t u = (int32_t)(ph >> 16) - 32768, v = (int32_t)((ph + 0x40000000u) >> 16) - 32768;
-        *ox = 32767 - 2 * (u < 0 ? -u : u); *oy = 32767 - 2 * (v < 0 ? -v : v);
+        *ox = clampi(32767 - 2 * (u < 0 ? -u : u), -32767, 32767);   /* (never -32769: x R would overflow) */
+        *oy = clampi(32767 - 2 * (v < 0 ? -v : v), -32767, 32767);
         break;
     }
     case ORB_LINE: *ox = 0; *oy = sinq(ph); break;   /* (and all the way across: see voice_render) */
     default: *ox = sinq(ph + 0x40000000u); *oy = sinq(ph); break;
     }
+}
+
+/* the orbit's shape as a table, 1024 points a turn (+1 to interpolate): built once when ALGORITHM changes it, so a
+ * sample costs two table reads instead of up to three sines and two products (the ISR's time, see RULES.md) */
+static int16_t orb_x[1025], orb_y[1025];
+static uint8_t orb_built = 0xFF;
+
+static void orbit_table(uint8_t orbit)
+{
+    for (uint32_t i = 0; i <= 1024u; i++) {
+        int32_t ox, oy;
+        orbit_at(orbit, i << 22, &ox, &oy);
+        orb_x[i] = (int16_t)clampi(ox, -32767, 32767);
+        orb_y[i] = (int16_t)clampi(oy, -32767, 32767);
+    }
+    orb_built = orbit;
 }
 
 /* ------------------------------------------------------------------------------------------------ one voice */
@@ -509,11 +532,13 @@ static void voice_render(voice_t *x, uint32_t frames, int32_t pitch_mod, int32_t
             }
             uint32_t ph = x->ph;
             x->ph = ph + inc;
-            int32_t ox, oy;
-            orbit_at(orbit, ph, &ox, &oy);
+            uint32_t oi = ph >> 22;
+            int32_t of = (int32_t)((ph >> 7) & 0x7FFFu);   /* (Q15: 32-bit products) */
+            int32_t ox = orb_x[oi] + (((orb_x[oi + 1u] - orb_x[oi]) * of) >> 15);
+            int32_t oy = orb_y[oi] + (((orb_y[oi + 1u] - orb_y[oi]) * of) >> 15);
             uint32_t X = cx + (uint32_t)(ox * R), Y = cy + (uint32_t)(oy * Ry);
             if (orbit == ORB_LINE) X = cx + ph;
-            int32_t s = terrain_at(X, Y) << 1;  /* Q15 */
+            int32_t s = terrain_at(X, Y) * 2;   /* Q15 */
             x->dc += (s - x->dc) >> 10;         /* the wave's own mean, away */
             s -= x->dc;
             int32_t a = ((x->env >> 9) * vl) >> 14;
@@ -554,6 +579,7 @@ static void anthem_render(int32_t *out, uint32_t frames)
     int32_t level = pat.lfo_target == LFO_LEVEL ? Q15 - (32767 - l) * pat.lfo_depth / 200 : Q15;
 
     terrain_glide();
+    if (orb_built != pat.orbit % ORBITS) orbit_table(pat.orbit % ORBITS);
     colony_block();
 
     for (uint32_t i = 0; i < frames; i++) vbuf_l[i] = vbuf_r[i] = 0;

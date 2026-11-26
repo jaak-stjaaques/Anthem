@@ -1,6 +1,6 @@
 # ANTHEM operator manual
 
-ANTHEM 0.1.6 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
+ANTHEM 0.1.7 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
 
 ## The idea in one minute
 
