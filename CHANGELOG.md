@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 – 2026-11-25
+
+- **The seed sings an octave up.** On the cells of the SEED's pattern (ONE DOT, DASHES, CROSS, RING, DUST, MOSS,
+  STRIPES) the ants sing an octave higher, for the colony's whole life, painted over or not: you hear what the seed
+  does. On HOME a seed's cell walked bare keeps a faint amber dot; on SEQ the seed's cells show in chalk. A
+  USER preset keeps where its seed lay.
+
 ## 0.1.2 – 2026-11-25
 
 - **Twice as fast with both OCT buttons.** OCT− or OCT+ alone: the ants walk backwards or forwards at the same speed

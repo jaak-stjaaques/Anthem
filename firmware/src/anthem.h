@@ -123,8 +123,15 @@ static void ants_place(void)                    /* where a new colony's ants sta
     }
 }
 
-static void ground_seed(uint8_t seed)           /* the ground a colony hatches on (always the same for a seed) */
+/* where the SEED's pattern lies: an ant sings an octave higher on these cells, painted over or not, for the colony's
+ * whole life (so you hear what the seed does) */
+static volatile uint8_t seed_at[GH][GW];
+static volatile uint8_t hatched_seed;           /* the SEED this colony hatched on */
+
+static void ground_seed(uint8_t seed, uint8_t paint)   /* the pattern of a seed (always the same); paint: onto the
+                                                         * ground too (a hatch), or only where it lies (a USER preset) */
 {
+    hatched_seed = seed;
     uint32_t r = 0x2545F491u;
     for (uint32_t y = 0; y < GH; y++)
         for (uint32_t x = 0; x < GW; x++) {
@@ -140,7 +147,8 @@ static void ground_seed(uint8_t seed)           /* the ground a colony hatches o
             case SEED_STRIPES: c = x % 7u == 0u ? (uint8_t)(1u + (x / 7u) % 3u) : 0u; break;
             default: break;
             }
-            ground[y][x] = c;
+            seed_at[y][x] = c != 0u;
+            if (paint) ground[y][x] = c;
         }
 }
 
@@ -162,6 +170,7 @@ static volatile uint32_t world_load;            /* a saved colony to put down (w
 static uint8_t world_buf[GH * GW / 4u + 1u];
 static uint8_t world_ants[ANTS * 3u];
 static int32_t world_buf_t;
+static uint8_t world_seed;
 
 /* -------------------------------------------------------------------------------------------- the voices */
 enum { ST_IDLE, ST_ATTACK, ST_DECAY, ST_HOLD, ST_RELEASE };
@@ -299,6 +308,7 @@ static void ant_sing(uint32_t i, uint8_t colour, uint32_t wait, int32_t loud)
     uint32_t cx = 0x80000000u + (uint32_t)(int32_t)(((int64_t)ddx * q8) >> 8);
     uint32_t cy = 0x80000000u + (uint32_t)(int32_t)(((int64_t)ddy * q8) >> 8);
     int32_t pitch = cell_pitch[y][x];
+    if (seed_at[y][x]) pitch = pitch + 12 * 256 > 120 * 256 ? pitch : pitch + 12 * 256;   /* the seed: an octave up */
     voice_start(voice_pick(), pitch, vel, pan, cx, cy, wait, 0, (uint8_t)(i + 1u));
     if (sung_w - sung_r < 32u) {
         sung_t *e = &sungq[sung_w % 32u];
@@ -361,7 +371,7 @@ static void colony_block(void)
 {
     if (hatch_r != hatch_w) {                   /* REC: a new colony from the SEED */
         hatch_r = hatch_w;
-        ground_seed(pat.seed);
+        ground_seed(pat.seed, 1);
         ants_place();
         world_t = 0;
         painted = count_painted();
@@ -376,6 +386,7 @@ static void colony_block(void)
         }
         world_t = world_buf_t;
         painted = count_painted();
+        ground_seed(world_seed, 0);
         world_load = 0;
         world_ver++;
     }

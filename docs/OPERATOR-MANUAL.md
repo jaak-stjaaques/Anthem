@@ -1,6 +1,6 @@
 # ANTHEM operator manual
 
-ANTHEM 0.1.2 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
+ANTHEM 0.1.3 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
 
 ## The idea in one minute
 
@@ -76,14 +76,15 @@ The ground: bare cells are faint dots, painted ones amber, blue or chalk. The an
 | 1 | **ANTS** | How many walk, 1 to 4. They start spread along the middle, each facing another way |
 | 2 | **RULE** | What an ant does on each colour: R right, L left, N straight on, U about turn. LANGTON `RL` (chaos, then a highway), SQUARE `LLRR` (a square that grows), MIRROR `RLLR` (symmetric shapes), CHAOS `RLR`, CLOUD `RNNL`, KNOT `LRRR`, WEAVE `LLRL`, CORAL `LRL`, SPIRAL `RRLU`. Changing it while they walk is allowed, and makes a new world |
 | 3 | **STEP** | How often they step: 1/4, 1/8, 1/8 T, 1/16, 1/16 T, 1/32 |
-| 4 | **SEED** | The ground a new colony hatches on: BARE, ONE DOT, DASHES, CROSS, RING, DUST, MOSS, STRIPES. Press **REC** to hatch on it |
+| 4 | **SEED** | The ground a new colony hatches on: BARE, ONE DOT, DASHES, CROSS, RING, DUST, MOSS, STRIPES. Press **REC** to hatch on it. **On the seed's cells the ants sing an octave higher**, for the colony's whole life, painted over or not: you hear the seed. A seed's cell walked bare keeps a faint amber dot |
 
 ## SEQ: the harmony
 
 <p align="center"><img src="screenshots/seq.png" width="320" alt="SEQ: every cell coloured by its note, low dark and high bright, the roots in amber; the knobs ACROSS, UP, RANGE, SING ON"></p>
 
 There is no step sequencer: the ants are the sequencer. This page says **which note each cell sings**. The picture
-colours every cell by its note (low dark, high bright blue), the roots amber.
+colours every cell by its note (low dark, high bright blue), the roots amber. The seed's cells (an octave up) show in
+chalk.
 
 | Knob | | |
 | --- | --- | --- |

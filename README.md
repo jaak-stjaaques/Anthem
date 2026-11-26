@@ -24,7 +24,7 @@ un-writes itself, singing its song in reverse, all the way back to the moment it
 wrote). **OCT+** and they go forward again.
 
 - **The colony (HOME)**: ANTS (1 to 4), RULE (LANGTON, SQUARE, MIRROR, CHAOS, CLOUD, KNOT, WEAVE, CORAL, SPIRAL),
-  STEP (1/4 .. 1/32), SEED (the ground it hatches on). **REC hatches** a new colony; **SEL freezes** the paint: the
+  STEP (1/4 .. 1/32), SEED (the ground it hatches on; on its cells the ants sing an octave higher). **REC hatches** a new colony; **SEL freezes** the paint: the
   ground stops changing, the walk closes into a loop, the music repeats. SEL again and they write on.
 - **Time**: **OCT− backwards, OCT+ forwards**, at the same speed; hold one and press the other: twice as fast, the
   way the first one set. **SELECT walks time by
@@ -49,7 +49,7 @@ wrote). **OCT+** and they go forward again.
 
 [Read the operator manual](docs/OPERATOR-MANUAL.md) · [Credits and licenses](LICENSING.md) · [Changelog](CHANGELOG.md)
 
-**Version 0.1.2** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.2.fwsc`). The host tests pass. It has **not yet
+**Version 0.1.3** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.3.fwsc`). The host tests pass. It has **not yet
 been installed on a physical FM‑1**.
 
 ## Build

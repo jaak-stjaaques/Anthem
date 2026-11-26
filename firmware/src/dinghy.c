@@ -342,6 +342,7 @@ static void preset_load(uint8_t p)
             for (uint32_t i = 0; i < sizeof world_buf; i++) world_buf[i] = u->cells[i];
             for (uint32_t i = 0; i < sizeof world_ants; i++) world_ants[i] = u->ants[i];
             world_buf_t = u->t;
+            world_seed = u->p.pad[0] ? (uint8_t)((u->p.pad[0] - 1u) % SEEDS) : pat.seed;   /* where its seed lay */
             world_load = 1;
             return;
         }
@@ -368,6 +369,7 @@ static int preset_save(uint8_t slot)            /* the patch and the colony as i
     for (uint32_t i = 0; i < GH * GW; i++) u->cells[i >> 2] |= (uint8_t)((ground[i / GW][i % GW] & 3u) << ((i & 3u) * 2u));
     for (uint32_t i = 0; i < ANTS; i++) { u->ants[3u * i] = ant_vx[i]; u->ants[3u * i + 1u] = ant_vy[i]; u->ants[3u * i + 2u] = ant_vd[i]; }
     u->t = world_t;
+    u->p.pad[0] = (uint8_t)(hatched_seed + 1u);  /* the seed the colony hatched on (its cells sing an octave up) */
     u->has = 1;
     store.magic = PRESET_MAGIC;
     return blob_save(PRESET_BLOB, &store, sizeof store) >= 0;
@@ -575,7 +577,8 @@ static void draw_ground_pic(uint32_t now)
         for (uint32_t x = 0; x < GW; x++) {
             uint8_t c = ground[y][x] & 3u;
             if (c) cv_rect((int32_t)x * 4, (int32_t)y * 4, 3, 3, paint_c[c]);
-            else cv_pset((int32_t)x * 4 + 1, (int32_t)y * 4 + 1, C_RULE);
+            else cv_pset((int32_t)x * 4 + 1, (int32_t)y * 4 + 1, seed_at[y][x] ? C_AMBER_DIM : C_RULE);   /* (a seed's
+                                                 * cell, walked bare: still an octave up) */
         }
     draw_ants(now);
     cv_blit(BOX_X, PIC_Y);
@@ -609,6 +612,7 @@ static void draw_map_pic(uint32_t now)
             int32_t p = cell_pitch[y][x], note = (p + 128) >> 8;
             uint32_t k = (uint32_t)(1 + (p - lo) * 9 / span);   /* low notes dark, high ones bright */
             uint16_t c = (uint32_t)(note % 12) == root ? C_AMBER_DIM : mix565(C_BG, C_TIME, k);
+            if (seed_at[y][x]) c = mix565(c, C_KEY, 10u);   /* the seed's cells: an octave up, in chalk */
             cv_rect((int32_t)x * 4, (int32_t)y * 4, 3, 3, c);
         }
     draw_ants(now);
