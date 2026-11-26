@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5 – 2026-11-25
+
+- **Only the ants sing.** The keys no longer play the engine. On every page they set the root (C4 = C, "ROOT D" on
+  the screen); on the ARP page they hold the chord the ants sing. MIDI notes in do the same: the chord with the ARP
+  on, the root otherwise. The root's key is lit, with the ants' notes flashing on the keys.
+
 ## 0.1.4 – 2026-11-25
 
 - **A random sound: hold EDIT for 300 ms on the EDIT page.** The orbit, SIZE, GROUND, SMOOTH, DRIFT, the ENV and the LFO

@@ -248,15 +248,24 @@ static const char *message;
 static uint32_t message_at;
 static void say(const char *text) { message = text; message_at = fm1_ms; }
 
-static void live_note(uint32_t on, uint32_t note, uint32_t vel)
+/* The keys never sound: only the ants sing. On the ARP page they hold the chord the ants sing; everywhere else they
+ * set the root (C4 = C). MIDI notes in do the same: the chord with the ARP on, else the root. */
+static const char *const root_names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+static void root_from(uint32_t note)
+{
+    static char b[16];
+    scale_now.transpose = (int8_t)clampi((int32_t)note - 60, -31, 43);
+    put_str(put_str(b, "ROOT "), root_names[scale_root_pc()]);
+    say(b);
+}
+
+static void chord_key(uint32_t on, uint32_t note)
 {
     if (on) {
-        if (arp.on && arp.latch && latched) { held_n = 0; latched = 0; }   /* a new chord after a latched one */
+        if (arp.latch && latched) { held_n = 0; latched = 0; }   /* a new chord after a latched one */
         if (held_n < 16u) held[held_n++] = (uint8_t)note;
-        if (!arp.on) cmd_put(1, (uint8_t)(note + 1u), scale_step_pitch(scale_note_step((int32_t)note)), (int32_t)vel * 258);
     } else {
-        cmd_put(0, (uint8_t)(note + 1u), 0, 0);
-        if (arp.on && arp.latch) {              /* LATCH: the chord stays once every key is up */
+        if (arp.latch) {                        /* LATCH: the chord stays once every key is up */
             uint32_t down = 0;
             for (uint32_t k = 0; k < 27u; k++) down += fm1_in.notes >> k & 1u;
             if (!down) { latched = 1; return; }
@@ -265,6 +274,13 @@ static void live_note(uint32_t on, uint32_t note, uint32_t vel)
         for (uint32_t i = 0; i < held_n; i++) if (held[i] != note) held[j++] = held[i];
         held_n = (uint8_t)j;
     }
+}
+
+static void live_note(uint32_t on, uint32_t note, uint32_t vel)
+{
+    (void)vel;
+    if (arp.on) chord_key(on, note);
+    else if (on) root_from(note);
 }
 
 static void live_panic(void)
@@ -1025,7 +1041,7 @@ static void draw_footer(uint8_t page)
         else ui_footer("REC: HATCH   SEL: FREEZE", C_OFF);
         break;
     case P_SEQ: ui_footer("A CELL'S NOTE: ACROSS + UP", C_OFF); break;
-    case P_ARP: ui_footer(arp.on ? "THE ANTS SING YOUR CHORD" : "ARP: PRESS AGAIN TO TURN ON", C_OFF); break;
+    case P_ARP: ui_footer(arp.on ? "KEYS: THE CHORD THEY SING" : "ARP: PRESS AGAIN TO TURN ON", C_OFF); break;
     case P_EDIT: ui_footer("ALGO: ORBIT  HOLD EDIT: RANDOM", C_OFF); break;
     case P_ENV: ui_footer("EVERY FOOTSTEP", C_OFF); break;
     case P_LFO: {
@@ -1225,19 +1241,18 @@ static void app_main(void)
         for (uint32_t k = 0; k < 4; k++) steps[k] = fm1_enc_take(ENC_KNOB1 + k);
         if (steps[0] || steps[1] || steps[2] || steps[3]) edit_page(page, steps);
 
-        /* ---- the keys: they play the ground (or hold the ARP's chord) everywhere but GLO, where they set the root */
+        /* ---- the keys never sound: on the ARP page they hold the chord the ants sing, everywhere else they set the
+         * root */
         uint32_t keys = fm1_in.notes, down = keys & ~prev_keys, up = prev_keys & ~keys;
         prev_keys = keys;
         for (uint32_t k = 0; k < 27u; k++) {
             uint32_t bit = 1u << k;
+            uint8_t note = (uint8_t)(KEY0 + k);
             if (down & bit) {
-                if (page == P_GLO) { scale_now.transpose = (int8_t)((int32_t)k - 7); key_on[k] = 0; }   /* C4 = none */
-                else {
-                    key_on[k] = (uint8_t)(KEY0 + (int32_t)k + 12 * scale_now.octave);
-                    key_note(1, key_on[k], 100);
-                }
+                if (page == P_ARP) { key_on[k] = note; chord_key(1, note); }
+                else { root_from(note); key_on[k] = 0; }
             }
-            if ((up & bit) && key_on[k]) { key_note(0, key_on[k], 0); key_on[k] = 0; }
+            if ((up & bit) && key_on[k]) { chord_key(0, key_on[k]); key_on[k] = 0; }
         }
 
         midi_poll(0);
@@ -1268,13 +1283,14 @@ static void app_main(void)
             if (off_at[i] && (int32_t)(now - off_at[i]) >= 0) { midi_send(0x80u | midi_out_ch(), off_note[i], 0); off_at[i] = 0; }
 
         /* ---- LEDs */
-        uint32_t lit = keys;
-        if (page == P_GLO) {
+        uint32_t lit = page == P_ARP ? keys : 0u;
+        if (page != P_ARP) {                    /* the root, and the notes the ants sing as they sing them */
             int32_t k = scale_now.transpose + 7;
             while (k > 26) k -= 12;
             while (k < 0) k += 12;
             lit = 1u << k;
-        } else {
+        }
+        {
             for (uint32_t k = 0; k < 27u; k++) if ((int32_t)(flash_until[k] - now) > 0) lit |= 1u << k;
         }
         for (uint32_t k = 0; k < 27u; k++) fm1_led_key(KEY_LED(k), lit >> k & 1u);

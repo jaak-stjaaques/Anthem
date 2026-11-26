@@ -1,6 +1,6 @@
 # ANTHEM operator manual
 
-ANTHEM 0.1.4 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
+ANTHEM 0.1.5 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
 
 ## The idea in one minute
 
@@ -59,10 +59,10 @@ ANTHEM is silent at power-on: the ants wait until you press **PLAY**.
 | **ALGORITHM** (encoder) | The orbit's shape: CIRCLE, EIGHT, ROSE, DIAMOND, LINE |
 | **PRESETS** (encoder) | The 8 presets and the 8 USER slots |
 | **KNOB 1..4** | The four rows of the page |
-| **Keys** | Play the ground (the sound under the first ant, snapped to the scale). With the ARP on: the chord the ants sing. On GLO: the root |
+| **Keys** | **Never play the engine: only the ants sing.** On every page they set the root (C4 = C; the screen says "ROOT D"). On the ARP page: the chord the ants sing |
 | **MASTER** | The volume |
 
-The keys light up when an ant sings their note. OCT+ or OCT− is lit for the way time runs, SEL while frozen.
+The root's key is lit, and the keys light up when an ant sings their note (on the ARP page: the keys you hold). OCT+ or OCT− is lit for the way time runs, SEL while frozen.
 
 ## HOME: the colony
 
@@ -127,7 +127,7 @@ just opens it.)
 | Knob | | |
 | --- | --- | --- |
 | 1 | **ATTACK** | 0 ms to 20 s |
-| 2 | **DECAY** | How long a footstep rings, up to 10 s (and how long a key rings after you let go). Many long notes at once are kept from distorting: the level comes down smoothly instead |
+| 2 | **DECAY** | How long a footstep rings, up to 10 s. Many long notes at once are kept from distorting: the level comes down smoothly instead |
 | 3 | **ACCENT** | How much louder the later colours are: amber softest, chalk loudest |
 | 4 | **BLOOM** | The orbit opens at each footstep and closes as it decays: brighter at the start |
 
@@ -168,7 +168,8 @@ REVERB, ECHO, TIME (the echo, 1/32 to a dotted 1/4, on the tempo) and CHORUS, in
 | 3 | **SYNC** | AUTO (a MIDI clock that comes in leads) or INTERNAL |
 | 4 | **MIDI CH** | OMNI or 1..16, in and out |
 
-The keys set the root (C4 = C), OCT− / OCT+ move it an octave.
+The keys set the root (C4 = C), here as on every page but ARP; OCT− / OCT+ move it an octave (on this page only:
+elsewhere they run time).
 
 ## Presets
 
@@ -202,9 +203,9 @@ the MIDI channel are saved with SAVE too. A MIDI program change chooses a preset
 
 ## MIDI
 
-- **In**: notes play like the keys (with the ARP on: the chord), the sustain pedal, CC 7 volume, all notes off,
+- **In**: notes set the root (with the ARP on: they hold the chord the ants sing), CC 7 volume, all notes off,
   program change. Clock and START / STOP / CONTINUE: a master leads the tempo, and its START sets the ants walking.
-- **Out**: every note an ant sings, on the MIDI channel, and the keys you play.
+- **Out**: every note an ant sings, on the MIDI channel.
 - **USB audio**: the FM‑1 is a stereo audio input for your computer or phone.
 - **FM‑1 Mirror** and the **backup page** work as in every Dinghy firmware.
 

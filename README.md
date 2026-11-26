@@ -41,7 +41,8 @@ wrote). **OCT+** and they go forward again.
 - **LFO, the wind**: SIZE, SHIFT (the orbits slide over the ground), PITCH or LEVEL.
 - **The ARP is a chord the ants sing**: hold keys and every cell's note goes to the nearest note of your chord (or
   they take its notes IN TURN), SPREAD over octaves, with a CHANCE that is the same forwards and backwards.
-- **48 scales**, common and exotic. On the GLO page the keys set the root.
+- **Only the ants sing.** The keys never play the engine: on every page they set the root (on the ARP page, the
+  chord). **48 scales**, common and exotic.
 - **The time line is on every page**: the colony's age (T+123), how much of the ground is painted, which way time runs.
 - **Dinghy inside**: MIDI clock sync, MIDI in and out (every note the ants sing goes out), USB audio, FM‑1 Mirror, the
   backup page.
@@ -50,7 +51,7 @@ wrote). **OCT+** and they go forward again.
 
 [Read the operator manual](docs/OPERATOR-MANUAL.md) · [Credits and licenses](LICENSING.md) · [Changelog](CHANGELOG.md)
 
-**Version 0.1.4** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.4.fwsc`). The host tests pass. It has **not yet
+**Version 0.1.5** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.5.fwsc`). The host tests pass. It has **not yet
 been installed on a physical FM‑1**.
 
 ## Build
