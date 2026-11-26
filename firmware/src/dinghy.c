@@ -60,6 +60,24 @@ static int32_t output_level(int32_t sample)
     return sample < 0 ? -m : m;
 }
 
+/* The last limiter, after the effects: a full echo and a full reverb on top of four ants can still build up. As the
+ * voices' one (anthem.h): down within 0.7 ms before the sum reaches 19000, back up slowly. */
+static void out_limit(int32_t *out, uint32_t frames)
+{
+    static int32_t gain = Q15;
+    int32_t peak = 0;
+    for (uint32_t i = 0; i < 2u * frames; i++) { int32_t m = out[i] < 0 ? -out[i] : out[i]; if (m > peak) peak = m; }
+    int32_t target = peak > 19000 ? (19000 << 15) / peak : Q15;
+    int32_t g0 = gain, g1 = target < gain ? target : gain + ((target - gain) >> 6);
+    uint32_t ramp = target < gain ? 32u : frames;
+    for (uint32_t i = 0; i < frames; i++) {
+        int32_t g = i < ramp ? g0 + (g1 - g0) * (int32_t)i / (int32_t)ramp : g1;
+        out[2u * i] = (int32_t)(((int64_t)out[2u * i] * g) >> 15);
+        out[2u * i + 1u] = (int32_t)(((int64_t)out[2u * i + 1u] * g) >> 15);
+    }
+    gain = g1;
+}
+
 static void app_audio(int32_t *out, uint32_t frames)
 {
 #ifndef DINGHY_HOST
@@ -68,6 +86,7 @@ static void app_audio(int32_t *out, uint32_t frames)
     clock_audio(frames);                        /* the transport first: its ticks move the ants */
     anthem_render(out, frames);
     effects_process(out, frames);
+    out_limit(out, frames);
     int32_t vol = midi_vol_q15();
     for (uint32_t i = 0; i < 2u * frames; i++) out[i] = (output_level(out[i]) * vol) >> 15;
 #ifndef DINGHY_HOST
@@ -85,6 +104,7 @@ static void app_audio(int32_t *out, uint32_t frames)
 #include "kit_backup.h"
 
 /* ---------------------------------------------------------------------------------------------- settings */
+#define DECAY_MAX 30u                           /* env_ms[30] = 10 s: the longest DECAY */
 #define KEY0 53u                                /* key 0 = F3 */
 #define FAST_MS 350u                            /* OCT held this long: time runs four times as fast */
 #define SET_VER 1u
@@ -301,7 +321,7 @@ static void preset_name(uint8_t p, char *b)
 static int patch_ok(const patch_t *s)
 {
     return s->orbit < ORBITS && s->size <= 100 && s->ground <= 100 && s->smooth <= 4 && s->drift <= 100 &&
-           s->attack < ENV_STEPS && s->decay < ENV_STEPS && s->accent <= 100 && s->bloom <= 100 &&
+           s->attack < ENV_STEPS && s->decay <= DECAY_MAX && s->accent <= 100 && s->bloom <= 100 &&
            s->lfo_target < LFO_TARGETS && s->lfo_wave < LFO_WAVES && s->lfo_rate < LFO_RATES && s->lfo_depth <= 100 &&
            s->reverb <= 100 && s->echo <= 100 && s->echo_time < ECHOS && s->chorus <= 100 &&
            s->ants >= 1 && s->ants <= ANTS && s->rule < RULES && s->step < STEPS && s->seed < SEEDS &&
@@ -886,7 +906,7 @@ static void edit_page(uint8_t page, const int32_t s[4])
         break;
     case P_ENV:
         pat.attack = (uint8_t)step_clamp(pat.attack, s[0], 0, ENV_STEPS - 1);
-        pat.decay = (uint8_t)step_clamp(pat.decay, s[1], 0, ENV_STEPS - 1);
+        pat.decay = (uint8_t)step_clamp(pat.decay, s[1], 0, DECAY_MAX);
         pat.accent = pct(pat.accent, s[2]);
         pat.bloom = pct(pat.bloom, s[3]);
         break;

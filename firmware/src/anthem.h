@@ -543,10 +543,27 @@ static void anthem_render(int32_t *out, uint32_t frames)
     for (uint32_t v = 0; v < NVOICE; v++)
         if (vo[v].stage != ST_IDLE) voice_render(&vo[v], frames, pitch_mod, size_mod, shift, level0, level);
     level0 = level;
+    /* The voices' limiter. Long decays pile notes up (eight voices of 10 s each are four times full scale): the
+     * gain comes down smoothly, before the sum reaches LIMIT, and comes back slowly (~0.4 s) once it is quieter. The
+     * output's soft ceiling is then only for the echo and the reverb on top, never for the voices themselves. */
+#define LIMIT 12500
+    static int32_t gain = Q15;                  /* Q15 */
+    int32_t peak = 0;
     for (uint32_t i = 0; i < frames; i++) {
-        out[2u * i] += vbuf_l[i] / 2;           /* (headroom: eight voices at once) */
-        out[2u * i + 1u] += vbuf_r[i] / 2;
+        int32_t a = vbuf_l[i] < 0 ? -vbuf_l[i] : vbuf_l[i], b = vbuf_r[i] < 0 ? -vbuf_r[i] : vbuf_r[i];
+        if (a > peak) peak = a;
+        if (b > peak) peak = b;
     }
+    peak /= 2;                                  /* (the voices go out at half: eight at once) */
+    int32_t target = peak > LIMIT ? (LIMIT << 15) / peak : Q15;   /* (32-bit: no 64-bit division on the chip) */
+    int32_t g0 = gain, g1 = target < gain ? target : gain + ((target - gain) >> 6);
+    uint32_t ramp = target < gain ? 32u : frames;   /* down within 0.7 ms (no click), up over the block */
+    for (uint32_t i = 0; i < frames; i++) {
+        int32_t g = i < ramp ? g0 + (g1 - g0) * (int32_t)i / (int32_t)ramp : g1;
+        out[2u * i] += (int32_t)(((int64_t)(vbuf_l[i] / 2) * g) >> 15);
+        out[2u * i + 1u] += (int32_t)(((int64_t)(vbuf_r[i] / 2) * g) >> 15);
+    }
+    gain = g1;
 }
 
 static int anthem_quiet(void)

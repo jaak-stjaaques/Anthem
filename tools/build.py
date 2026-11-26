@@ -63,7 +63,7 @@ SCREEN_NAME = "ANTHEM"               # the update loader's screen (FM-1, ldr_scr
 SCREEN_COLOUR = 0xFAE9              # the ant's red, #FF5C48
 FM1_PRODUCT = "FM-1_582961"         # ANTHEM keeps this identity across releases (as PLUMB, BUOY, BEACHCOMBER, whywhywhy)
 PRODUCT = FM1_PRODUCT
-VERSION = "0.1"                     # APP_VER (a release build: --release X.Y)
+VERSION = "0.1.1"                     # APP_VER (a release build: --release X.Y)
 
 
 def toolchain():

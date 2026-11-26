@@ -1,6 +1,6 @@
 # ANTHEM operator manual
 
-ANTHEM 0.1 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
+ANTHEM 0.1.1 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
 
 ## The idea in one minute
 
@@ -120,7 +120,7 @@ As the ants paint, the landscape changes, and so does the sound: slowly, never w
 | Knob | | |
 | --- | --- | --- |
 | 1 | **ATTACK** | 0 ms to 20 s |
-| 2 | **DECAY** | How long a footstep rings (and how long a key rings after you let go) |
+| 2 | **DECAY** | How long a footstep rings, up to 10 s (and how long a key rings after you let go). Many long notes at once are kept from distorting: the level comes down smoothly instead |
 | 3 | **ACCENT** | How much louder the later colours are: amber softest, chalk loudest |
 | 4 | **BLOOM** | The orbit opens at each footstep and closes as it decays: brighter at the start |
 

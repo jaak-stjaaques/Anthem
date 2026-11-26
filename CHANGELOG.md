@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 – 2026-11-25
+
+- **No more distortion with long decays.** DECAY now ends at 10 s (it went to 20 s). Long footsteps pile up: eight
+  voices ringing for 10 s were up to four times full scale and were squashed by the output's ceiling. Now the voices
+  have a limiter of their own, and the whole sound one more after the echo and the reverb: the level comes down
+  smoothly before it would distort, and comes back within half a second. On the host: four ants and a held chord at
+  10 s, every preset, even with REVERB and ECHO at 100 %, stay under the ceiling; at normal settings nothing changes.
+
 ## 0.1 – 2026-11-25
 
 The first ANTHEM: a colony of ants writes the music, and time runs both ways.
