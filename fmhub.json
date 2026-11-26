@@ -5,7 +5,7 @@
     "sequencer"
   ],
   "play": "https://joakimeriksson.github.io/fm1-emu/",
-  "cheat": "https://github.com/jaak-stjaaques/Claude-gone-wild/blob/main/docs/OPERATOR-MANUAL.md",
+  "cheat": "https://github.com/jaak-stjaaques/Anthem/blob/main/docs/OPERATOR-MANUAL.md",
   "image": "docs/screenshots/home.png",
   "color": "#FF5C48",
   "sounds": "presets"
