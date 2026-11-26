@@ -1,0 +1,12 @@
+# A minute of ANTHEM: the eight presets, 7 s each (tests/run_host.sh tests/scripts/listen.txt)
+500 btn 12
+7500 enc 6 1
+14500 enc 6 1
+21500 enc 6 1
+28500 enc 6 1
+35500 enc 6 1
+42500 enc 6 1
+49500 enc 6 1
+56500 btn 0
+60000 btn 1
+63000 end

@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+"""Draw ANTHEM's boot logo (a ground of cells, the paint an ant has left on it by Langton's rule, 420 steps in, and the ant itself
+walking on) and pack it into a small RGB565 run-length bitmap: assets/anthem-boot.png (240 x 240), assets/logo.png
+(480 x 480) and firmware/gen/anthem_boot_logo.h (what the firmware draws)."""
+
+import math
+import sys
+from itertools import groupby
+from pathlib import Path
+
+from PIL import Image, ImageChops, ImageDraw, ImageFont
+
+root = Path(__file__).resolve().parent.parent
+S = 4                                   # drawn 4x larger, then shrunk: smooth edges
+BG = (10, 16, 22)                       # the firmware's C_BG
+AMBER = (226, 176, 84)                  # the paint: amber, blue, chalk (as on the HOME page)
+BLUE = (122, 168, 240)
+KEY = (236, 232, 222)
+ANT = (255, 92, 72)
+RULE = (44, 58, 68)
+PAINT = [None, AMBER, BLUE, KEY]
+
+RULE_CODE = sys.argv[1] if len(sys.argv) > 1 else "RL"
+STEPS = int(sys.argv[2]) if len(sys.argv) > 2 else 420
+W, H, CELL = 25, 15, 8                  # the ground in the logo
+X0, Y0 = (240 - W * CELL) // 2, 22
+TURN = {"R": 1, "L": 3, "N": 0, "U": 2}
+DX, DY = [0, 1, 0, -1], [-1, 0, 1, 0]
+g = [[0] * W for _ in range(H)]
+x, y, d = W // 2, H // 2, 0
+n = len(RULE_CODE)
+for _ in range(STEPS):
+    c = g[y][x]
+    d = (d + TURN[RULE_CODE[c]]) % 4
+    g[y][x] = (c + 1) % n
+    x, y = (x + DX[d]) % W, (y + DY[d]) % H
+
+
+def mix(c, a):
+    return tuple(round(BG[i] + (c[i] - BG[i]) * a) for i in range(3))
+
+
+img = Image.new("RGB", (240 * S, 240 * S), BG)
+dr = ImageDraw.Draw(img)
+for j in range(H):
+    for i in range(W):
+        px, py = X0 + i * CELL, Y0 + j * CELL
+        c = g[j][i]
+        if c:
+            dr.rounded_rectangle([px * S, py * S, (px + CELL - 2) * S, (py + CELL - 2) * S], radius=1 * S, fill=PAINT[c])
+        else:
+            cx, cy = px + (CELL - 2) / 2, py + (CELL - 2) / 2
+            dr.ellipse([(cx - 0.8) * S, (cy - 0.8) * S, (cx + 0.8) * S, (cy + 0.8) * S], fill=RULE)
+# the ant, where the walk goes on: three segments, six legs and two antennae, facing the way it walks; a dark rim
+# keeps it apart from the paint under it
+ax, ay = X0 + x * CELL + (CELL - 2) / 2, Y0 + y * CELL + (CELL - 2) / 2
+ux, uy = DX[d], DY[d]
+vx, vy = -uy, ux
+K = 1.45                                # its size, in cells of the drawing above
+
+
+def ant(colour, grow):
+    for along, r in [(-4.6, 2.4), (0.0, 1.9), (4.3, 2.5)]:   # abdomen, thorax, head
+        cx, cy = ax + ux * along * K, ay + uy * along * K
+        rr = r * K + grow
+        dr.ellipse([(cx - rr) * S, (cy - rr) * S, (cx + rr) * S, (cy + rr) * S], fill=colour)
+    for along in (-1.6, 0.0, 1.6):
+        for side in (-1, 1):
+            bx, by = ax + ux * along * K, ay + uy * along * K
+            kx, ky = bx + (vx * side * 4.0 + ux * along * 0.7) * K, by + (vy * side * 4.0 + uy * along * 0.7) * K
+            fx, fy = kx + (vx * side * 1.8 + ux * along * 1.3) * K, ky + (vy * side * 1.8 + uy * along * 1.3) * K
+            dr.line([bx * S, by * S, kx * S, ky * S, fx * S, fy * S], fill=colour, width=int((1.0 + 2 * grow) * S), joint="curve")
+    for side in (-1, 1):
+        hx, hy = ax + ux * 5.8 * K, ay + uy * 5.8 * K
+        tx, ty = hx + (ux * 3.0 + vx * side * 2.6) * K, hy + (uy * 3.0 + vy * side * 2.6) * K
+        dr.line([hx * S, hy * S, tx * S, ty * S], fill=colour, width=int((0.9 + 2 * grow) * S))
+
+
+ant(BG, 1.3)
+ant(ANT, 0)
+font = ImageFont.truetype(str(root / "assets/fonts/IBMPlexMono-Medium.ttf"), 22 * S)
+text = "A N T H E M"
+w = dr.textlength(text, font=font)
+dr.text(((240 * S - w) / 2, 172 * S), text, font=font, fill=KEY)
+image = img.resize((240, 240), Image.LANCZOS)
+pal = []                                # the palette: each colour faded into the background, 8 steps
+for c in (AMBER, BLUE, KEY, ANT, RULE):
+    pal += [mix(c, a / 8) for a in range(1, 9)]
+pal = [BG] + pal
+pimg = Image.new("P", (1, 1))
+pimg.putpalette([v for c in pal for v in c] + [0] * (768 - 3 * len(pal)))
+image = image.quantize(palette=pimg, dither=Image.Dither.NONE).convert("RGB")
+image.save(root / "assets/anthem-boot.png")
+image.resize((480, 480), Image.NEAREST).save(root / "assets/logo.png")
+
+background = Image.new("RGB", image.size, image.getpixel((0, 0)))
+left, top, right, bottom = ImageChops.difference(image, background).getbbox()
+
+
+def rgb565(pixel):
+    red, green, blue = pixel
+    return ((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3)
+
+
+pixels = map(rgb565, image.crop((left, top, right, bottom)).getdata())
+runs = []
+for colour, group in groupby(pixels):
+    n = sum(1 for _ in group)
+    while n > 65535:
+        runs.append((65535, colour))
+        n -= 65535
+    runs.append((n, colour))
+lines = []
+for start in range(0, len(runs), 6):
+    lines.append("    " + ", ".join(f"{count}, 0x{colour:04x}" for count, colour in runs[start:start + 6]) + ",")
+header = (
+    "/* Generated by tools/gen_boot_logo.py (assets/anthem-boot.png). */\n"
+    f"#define BOOT_LOGO_X {left}u\n"
+    f"#define BOOT_LOGO_Y {top}u\n"
+    f"#define BOOT_LOGO_WIDTH {right - left}u\n"
+    f"#define BOOT_LOGO_HEIGHT {bottom - top}u\n"
+    "static const uint16_t boot_logo_runs[] = {\n"
+    + "\n".join(lines) + "\n};\n"
+)
+(root / "firmware/gen/anthem_boot_logo.h").write_text(header)
+print(f"{len(runs)} runs, box {left},{top} {right - left}x{bottom - top}")

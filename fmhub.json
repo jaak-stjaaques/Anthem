@@ -1,0 +1,12 @@
+{
+  "what": "A colony of ants writes the music: turmites (Langton's ant and its family) walk and paint a ground, each step sings its cell's note, and time runs both ways: backwards the colony un-writes itself and sings its song in reverse. The ground they paint is also the sound: wave terrain synthesis. 48 scales, a Tonnetz map, a chord the ants sing.",
+  "kinds": [
+    "synth",
+    "sequencer"
+  ],
+  "play": "https://joakimeriksson.github.io/fm1-emu/",
+  "cheat": "https://github.com/jaak-stjaaques/Claude-gone-wild/blob/main/docs/OPERATOR-MANUAL.md",
+  "image": "docs/screenshots/home.png",
+  "color": "#FF5C48",
+  "sounds": "presets"
+}
