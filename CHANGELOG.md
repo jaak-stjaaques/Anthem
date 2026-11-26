@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 – 2026-11-25
+
+- **Twice as fast with both OCT buttons.** OCT− or OCT+ alone: the ants walk backwards or forwards at the same speed
+  (holding one no longer speeds it up). Hold OCT− and press OCT+: backwards, twice as fast, as long as both are held;
+  hold OCT+ and press OCT−: forwards, twice as fast. Exactly twice, at every STEP (1/32 too), and the notes keep their
+  full loudness. The time line shows two white arrows meanwhile.
+
 ## 0.1.1 – 2026-11-25
 
 - **No more distortion with long decays.** DECAY now ends at 10 s (it went to 20 s). Long footsteps pile up: eight

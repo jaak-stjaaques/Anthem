@@ -156,7 +156,7 @@ static volatile uint32_t hatch_w, hatch_r;      /* REC: a new colony */
 static volatile uint32_t scrub_fw, scrub_bw;    /* SELECT: single steps forward / back (counted by the main loop) */
 static uint32_t scrub_fr, scrub_br;             /* ... and done by the ISR */
 static volatile int32_t time_dir = 1;           /* OCT+ forward (1), OCT- backward (-1) */
-static volatile uint32_t time_fast;             /* OCT held: four steps for one */
+static volatile uint32_t time_fast;             /* both OCT buttons held: two steps for one */
 static volatile uint32_t frozen;                /* SEL: the ants walk but no longer paint */
 static volatile uint32_t world_load;            /* a saved colony to put down (world_buf), set by the main loop */
 static uint8_t world_buf[GH * GW / 4u + 1u];
@@ -354,7 +354,7 @@ static void colony_publish(void)
     for (uint32_t i = 0; i < ANTS; i++) { ant_vx[i] = ant[i].x; ant_vy[i] = ant[i].y; ant_vd[i] = ant[i].d; }
 }
 
-static struct { uint8_t running; } cl;
+static struct { uint8_t running; uint32_t acc; } cl;
 static volatile uint32_t cl_running;
 
 static void colony_block(void)
@@ -385,11 +385,17 @@ static void colony_block(void)
 
     if (!clk_run) { cl.running = 0; cl_running = 0; tk_n = 0; colony_publish(); return; }
     uint32_t every = step_ticks[pat.step % STEPS];
-    if (time_fast) every = every / 4u ? every / 4u : 1u;
     for (uint32_t t = 0; t < tk_n; t++) {
         uint32_t tick = tk_tick[t];
         if (tick == 0u || !cl.running) cl.running = 1;
-        if (tick % every == 0u) colony_step(time_dir, tk_ofs[t], time_fast ? 20000 : Q15 - 1);
+        if (time_fast) {                        /* both OCT buttons: twice as fast (two half-ticks a tick: exact
+                                                 * for every STEP, 1/32 too) */
+            cl.acc += 2u;
+            if (cl.acc >= every) { cl.acc -= every; colony_step(time_dir, tk_ofs[t], Q15 - 1); }
+        } else {
+            cl.acc = 0;                         /* (back on the beat's grid) */
+            if (tick % every == 0u) colony_step(time_dir, tk_ofs[t], Q15 - 1);
+        }
     }
     tk_n = 0;
     cl_running = cl.running;

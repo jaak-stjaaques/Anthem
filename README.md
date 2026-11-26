@@ -26,7 +26,8 @@ wrote). **OCT+** and they go forward again.
 - **The colony (HOME)**: ANTS (1 to 4), RULE (LANGTON, SQUARE, MIRROR, CHAOS, CLOUD, KNOT, WEAVE, CORAL, SPIRAL),
   STEP (1/4 .. 1/32), SEED (the ground it hatches on). **REC hatches** a new colony; **SEL freezes** the paint: the
   ground stops changing, the walk closes into a loop, the music repeats. SEL again and they write on.
-- **Time**: **OCT− backwards, OCT+ forwards**; hold one and time runs four times as fast. **SELECT walks time by
+- **Time**: **OCT− backwards, OCT+ forwards**, at the same speed; hold one and press the other: twice as fast, the
+  way the first one set. **SELECT walks time by
   hand**, a step a detent, either way, playing or stopped.
 - **The map (SEQ)**: a cell's note is ACROSS scale steps for each column and UP for each row, folded into RANGE
   octaves. ACROSS 4, UP 2 in a seven-note scale is a **Tonnetz**: fifths one way, thirds the other. SING ON: the
@@ -48,7 +49,7 @@ wrote). **OCT+** and they go forward again.
 
 [Read the operator manual](docs/OPERATOR-MANUAL.md) · [Credits and licenses](LICENSING.md) · [Changelog](CHANGELOG.md)
 
-**Version 0.1.1** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.1.fwsc`). The host tests pass. It has **not yet
+**Version 0.1.2** builds as `anthem.fwsc` (a tagged release: `anthem-0.1.2.fwsc`). The host tests pass. It has **not yet
 been installed on a physical FM‑1**.
 
 ## Build

@@ -1,6 +1,6 @@
 # ANTHEM operator manual
 
-ANTHEM 0.1.1 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
+ANTHEM 0.1.2 for the M‑VAVE FM‑1. A colony of ants writes the music, and time runs both ways.
 
 ## The idea in one minute
 
@@ -40,7 +40,7 @@ REC: HATCH   SEL: FREEZE                 what a button does here, or what just h
 ```
 
 The word at the right of the time line: **FWD** (forward), **BACK** (backwards), **LOOP** (frozen), **STOP** (the
-transport is stopped). A white arrow: time runs four times as fast (an OCT button held).
+transport is stopped). Two white arrows: time runs twice as fast (both OCT buttons held).
 
 ANTHEM is silent at power-on: the ants wait until you press **PLAY**.
 
@@ -49,8 +49,8 @@ ANTHEM is silent at power-on: the ants wait until you press **PLAY**.
 | Control | What it does |
 | --- | --- |
 | **PLAY/STOP** | The ants walk, or stop where they are. A MIDI clock's START does the same, on the DAW's downbeat |
-| **OCT−** | **Time runs backwards.** Hold it: four times as fast. (On the GLO page: the root an octave down) |
-| **OCT+** | **Time runs forwards.** Hold it: four times as fast. (On the GLO page: the root an octave up) |
+| **OCT−** | **Time runs backwards**, at the same speed as forwards. Holding OCT+, press OCT−: **forwards, twice as fast**, as long as you hold both. (On the GLO page: the root an octave down) |
+| **OCT+** | **Time runs forwards.** Holding OCT−, press OCT+: **backwards, twice as fast**, as long as you hold both. (On the GLO page: the root an octave up) |
 | **REC** | **Hatch**: a new colony on the SEED, the ants back in their places, time back to 0 |
 | **SEL** | **Freeze**: the ants walk on but no longer paint. On a ground that does not change, their walk soon closes into a loop and the music repeats. SEL again: they paint again, and the music moves on |
 | **HOME, SEQ, ARP, EDIT, ENV, LFO, FX, GLO** | Their page. **ARP** pressed on the ARP page turns the chord on or off |
@@ -184,8 +184,8 @@ the MIDI channel are saved with SAVE too. A MIDI program change chooses a preset
 
 - **Hatch, then wait.** FIRST STEPS: one ant, Langton's rule, a bare ground. For a long time it scribbles, then it
   builds a highway, and the song changes character.
-- **Go back.** When something beautiful happens, hold OCT− for a moment, then OCT+: you hear it again, mirrored, then
-  as it was.
+- **Go back.** When something beautiful happens, press OCT−, then OCT+: you hear it again, mirrored, then as it was.
+  In a hurry? Hold OCT− and press OCT+: the rewind runs twice as fast until you let go.
 - **Freeze it.** SEL: the ants keep walking on the ground as it is, and their walk becomes a loop. Change the map
   (SEQ) or the scale under the loop. SEL again to let it grow on.
 - **Scrub.** Press STOP and turn SELECT: step by step, forwards and backwards, like a tape under your hand.

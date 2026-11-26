@@ -14,7 +14,7 @@
  *   LFO    WIND      SIZE, SHIFT, PITCH or LEVEL
  *   ARP    CHORD     hold keys: the ants sing only your chord
  *   FX, GLO          as ever: reverb, echo, chorus; the scale, the tempo, the sync, the MIDI channel
- *   OCT- / OCT+      time backwards / forwards (held: four times as fast); SELECT: a step at a time, by hand
+ *   OCT- / OCT+      time backwards / forwards; hold one and press the other: twice as fast; SELECT: a step at a time
  *
  * The files: anthem.h (the colony, the terrain engine, the ENV, the LFO; the audio interrupt), scale.h (48 scales),
  * effects.h (echo, reverb, chorus in parallel), this file (the keys, the presets, the pages). platform.c and the
@@ -106,7 +106,6 @@ static void app_audio(int32_t *out, uint32_t frames)
 /* ---------------------------------------------------------------------------------------------- settings */
 #define DECAY_MAX 30u                           /* env_ms[30] = 10 s: the longest DECAY */
 #define KEY0 53u                                /* key 0 = F3 */
-#define FAST_MS 350u                            /* OCT held this long: time runs four times as fast */
 #define SET_VER 1u
 static struct { uint8_t ver, oct, ch, sync_int, tempo, pad[3]; } set = {SET_VER, 0, 0, 0, 96, {0}};
 
@@ -547,7 +546,10 @@ static void draw_time_line(uint8_t time_page)
     uint32_t pc = painted;
     int32_t w = (int32_t)(pc * (uint32_t)(x1 - x0) / (GW * GH));
     cv_rect(x0, 7, w, 3, time_page ? C_AMBER : C_AMBER_DIM);
-    if (clk_run && !frozen) cv_tri((int32_t)UI_WIDTH - wm - 10, 3, time_dir, time_fast ? C_KEY : C_TIME);
+    if (clk_run && !frozen) {                   /* the way time runs; two arrows: twice as fast */
+        cv_tri((int32_t)UI_WIDTH - wm - 10, 3, time_dir, time_fast ? C_KEY : C_TIME);
+        if (time_fast) cv_tri((int32_t)UI_WIDTH - wm - 16, 3, time_dir, C_KEY);
+    }
     else if (frozen) { cv_rect((int32_t)UI_WIDTH - wm - 11, 4, 2, 8, C_TIME); cv_rect((int32_t)UI_WIDTH - wm - 7, 4, 2, 8, C_TIME); }
     cv_text((int32_t)UI_WIDTH - wm, 1, &UI_SMALL, word, clk_run ? C_KEY : C_OFF, C_BG);
     cv_blit(UI_LEFT, LINE_Y);
@@ -1074,7 +1076,6 @@ static void app_idle(void) { if (idle_ok) midi_poll(1); }
 /* ----------------------------------------------------------------------------------------------- the loop */
 static void app_main(void)
 {
-    uint32_t held_since[14] = {0};
     uint8_t page = P_HOME, drawn_page = 0xFF, key_on[27] = {0};
     uint32_t prev_keys = 0, drawn_state = 0, drawn_rows = 0, drawn_footer = ~0u, title_state = ~0u, drawn_line = ~0u;
     uint32_t flash_until[27] = {0}, off_at[16] = {0}, hatched_at = 0;
@@ -1115,7 +1116,6 @@ static void app_main(void)
         for (uint32_t i = 0; i < 14; i++) {
             uint32_t bit = 1u << i;
             if (b & bit) {
-                held_since[i] = now;
                 uint8_t to = button_page(i);
                 if (to != 0xFF) {
                     if (i == BTN_ARP) arp_was_page = page == P_ARP;
@@ -1123,11 +1123,13 @@ static void app_main(void)
                 }
                 if (i == BTN_OCT_DOWN || i == BTN_OCT_UP) {
                     int32_t d = i == BTN_OCT_UP ? 1 : -1;
+                    uint32_t other = i == BTN_OCT_UP ? BTN_OCT_DOWN : BTN_OCT_UP;
                     if (page == P_GLO) scale_now.transpose = (int8_t)step_clamp(scale_now.transpose, d * 12, -31, 43);
-                    else {
+                    else if (!(held_b >> other & 1u)) {   /* alone: the way time runs. (With the other held: twice
+                                                           * as fast that way, see below; the way stays) */
                         if (time_dir != d) say(d > 0 ? "TIME RUNS FORWARD" : "TIME RUNS BACKWARD");
                         time_dir = d;
-                    }
+                    } else say(time_dir > 0 ? "FORWARD, TWICE AS FAST" : "BACKWARD, TWICE AS FAST");
                 }
                 if (i == BTN_SEL) {             /* SEL: freeze the paint (the walk closes into a loop), or thaw it */
                     frozen = !frozen;
@@ -1148,12 +1150,8 @@ static void app_main(void)
                 say(arp.on ? "THE ANTS SING YOUR CHORD" : "THE ANTS SING THE MAP");
             }
         }
-        /* OCT held: time runs four times as fast that way */
-        uint32_t fast = 0;
-        if (page != P_GLO)
-            for (uint32_t i = BTN_OCT_DOWN; i <= BTN_OCT_UP; i++)
-                if ((held_b >> i & 1u) && now - held_since[i] >= FAST_MS) fast = 1;
-        time_fast = fast;
+        /* OCT- and OCT+ held together: time runs twice as fast, the way the first one pressed set */
+        time_fast = page != P_GLO && (held_b >> BTN_OCT_DOWN & 1u) && (held_b >> BTN_OCT_UP & 1u);
         /* SAVE: the whole instrument, and the colony as it stands, into a USER preset */
         if (b & (1u << BTN_SAVE)) {
             uint8_t slot = preset >= FACTORY ? preset : last_user;
